@@ -1,0 +1,63 @@
+model Category {
+    id          String   @id @default(uuid())
+    name        String   @unique
+    slug        String   @unique
+    description String?
+    courses     Course[]
+
+    @@map("categories")
+}
+
+model Course {
+    id           String       @id @default(uuid())
+    title        String
+    slug         String       @unique
+    description  String?
+    price        Int          @default(0)
+    isPaid       Boolean      @default(false)
+    status       CourseStatus @default(DRAFT)
+    thumbnailUrl String?
+    instructorId String
+    instructor   User         @relation("InstructorCourses", fields: [instructorId], references: [id])
+    categoryId   String?
+    category     Category?    @relation(fields: [categoryId], references: [id])
+
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+    deletedAt   DateTime?
+    lessons     Lesson[]
+    enrollments Enrollment[]
+
+    @@map("courses")
+}
+
+model Lesson {
+    id          String            @id @default(cuid())
+    courseId    String
+    course      Course            @relation(fields: [courseId], references: [id])
+    title       String
+    contentType LessonContentType
+    contentUrl  String?
+    contentText String?
+    lessonOrder Int
+    isPreview   Boolean           @default(false)
+    duration    Int?
+
+    createdAt         DateTime           @default(now())
+    updatedAt         DateTime           @updatedAt
+    lessonCompletions LessonCompletion[]
+
+    @@map("lessons")
+}
+
+model LessonCompletion {
+    id          String   @id @default(cuid())
+    lessonId    String
+    lesson      Lesson   @relation(fields: [lessonId], references: [id])
+    studentId   String
+    student     User     @relation(fields: [studentId], references: [id])
+    completedAt DateTime @default(now())
+
+    @@unique([lessonId, studentId])
+    @@map("lessonCompletions")
+}

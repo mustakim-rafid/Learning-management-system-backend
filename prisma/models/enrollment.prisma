@@ -1,0 +1,30 @@
+model Enrollment {
+    id          String           @id @default(cuid())
+    studentId   String
+    student     User             @relation(fields: [studentId], references: [id])
+    courseId    String
+    course      Course           @relation(fields: [courseId], references: [id])
+    status      EnrollmentStatus @default(ACTIVE)
+    progress    Float            @default(0)
+    enrolledAt  DateTime         @default(now())
+    completedAt DateTime?
+    payment     Payment?
+
+    @@unique([studentId, courseId])
+    @@map("enrollments")
+}
+
+model Payment {
+    id                 String        @id @default(cuid())
+    enrollmentId       String        @unique
+    enrollment         Enrollment    @relation(fields: [enrollmentId], references: [id])
+    amount             Int
+    provider           String?
+    providerPaymentId  String?
+    paymentGatewayData Json?
+    status             PaymentStatus @default(PENDING)
+    createdAt          DateTime      @default(now())
+    updatedAt          DateTime      @updatedAt
+
+    @@map("payments")
+}
