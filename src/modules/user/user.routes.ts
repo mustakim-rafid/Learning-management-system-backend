@@ -15,4 +15,21 @@ router.route("/create-admin").post(
     userControllers.createAdmin
 )
 
+router.route("/create-instructor").post(
+    fileUploader.upload.single("avatar"),
+    zodValidator(userValidations.userInputZodSchema),
+    userControllers.createInstructor
+)
+
+router.route("/create-student").post(
+    fileUploader.upload.single("avatar"),
+    zodValidator(userValidations.userInputZodSchema),
+    userControllers.createStudent
+)
+
+router.route("/").get(
+    checkAuth(Role.SUPER_ADMIN),
+    userControllers.getAllUsers
+)
+
 export const userRoutes = router

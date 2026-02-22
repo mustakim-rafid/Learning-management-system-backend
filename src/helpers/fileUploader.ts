@@ -27,6 +27,7 @@ const uploadToCloudinary = async (file: Express.Multer.File) => {
   try {
     const result = await cloudinary.uploader.upload(file.path, {
       public_id: file.filename,
+      resource_type: "auto"
     });
 
     if (result.secure_url) {
