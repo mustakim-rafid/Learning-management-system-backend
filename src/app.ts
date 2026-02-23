@@ -4,28 +4,38 @@ import globalErrorHandler from "./middleware/globalErrorHandler";
 import cookieParser from "cookie-parser";
 import config from "./config";
 import cors from "cors";
+import bodyParser from "body-parser";
+import { enrollmentControllers } from "./modules/enrollment/enrollment.controller";
 
-const app: Application = express()
+const app: Application = express();
 
-app.use(cors({
+app.post(
+  "/api/v1/webhook",
+  bodyParser.raw({ type: "application/json" }),
+  enrollmentControllers.paymentVerification
+);
+
+app.use(
+  cors({
     origin: config.frontend_url,
-    credentials: true
-}));
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req: Request, res: Response) => {
-    res.send({
-        Message: "Learning Management System",
-        runningTime: `${Math.floor(process.uptime())} seconds`,
-        time: new Date().toLocaleString()        
-    })
+app.get("/", (req: Request, res: Response) => {
+  res.send({
+    Message: "Learning Management System",
+    runningTime: `${Math.floor(process.uptime())} seconds`,
+    time: new Date().toLocaleString(),
+  });
 });
 
-app.use("/api/v1", router)
+app.use("/api/v1", router);
 
 app.use(globalErrorHandler);
 
-export default app
+export default app;

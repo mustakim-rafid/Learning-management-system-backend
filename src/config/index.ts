@@ -23,4 +23,8 @@ export default {
     email: process.env.SUPER_ADMIN_EMAIL,
     password: process.env.SUPER_ADMIN_PASSWORD
   },
+  stripe: {
+    stripe_secret_key: process.env.STRIPE_SECRET_KEY,
+    stripe_webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
+  },
 };

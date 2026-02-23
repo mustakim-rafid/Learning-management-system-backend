@@ -49,7 +49,7 @@ const publishCourse = catchAsync(async (req: Request, res: Response) => {
 
 const getAllCourses = catchAsync(async (req: Request, res: Response) => {
   const paginations = pick(req.query, paginationParameters);
-  const filters = pick(req.query, ["categoryId", "isPaid", "instructorId"]);
+  const filters = pick(req.query, ["searchTerm", "categoryId", "isPaid", "instructorId"]);
   const result = await courseServices.getAllCourses(paginations, filters);
   sendResponse(res, {
     statusCode: httpStatus.OK,
