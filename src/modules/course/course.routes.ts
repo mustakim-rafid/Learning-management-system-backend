@@ -51,4 +51,9 @@ router
     courseControllers.listLessonsByCourse,
   );
 
+router.route("/instructor/courses").get(
+  checkAuth(Role.INSTRUCTOR),
+  courseControllers.getInstructorCourses
+)
+
 export const courseRoutes = router;

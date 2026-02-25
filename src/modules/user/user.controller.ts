@@ -51,9 +51,20 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const softDelete = catchAsync(async (req: Request, res: Response) => {
+  const result = await userServices.softDelete(req.params.id as string)
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "User suspended successfully",
+    data: result
+  });
+});
+
 export const userControllers = {
   createAdmin,
   createInstructor,
   createStudent,
-  getAllUsers
+  getAllUsers,
+  softDelete
 };

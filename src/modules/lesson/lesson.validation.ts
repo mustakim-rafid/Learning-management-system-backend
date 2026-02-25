@@ -20,6 +20,7 @@ export const createLessonZodSchema = z
       .optional(),
 
     duration: z
+      .coerce
       .number()
       .int("Duration must be an integer")
       .positive("Duration must be positive")
@@ -27,6 +28,7 @@ export const createLessonZodSchema = z
       .optional(),
 
     order: z
+      .coerce
       .number()
       .int("Order must be an integer")
       .positive("Order must be greater than 0")

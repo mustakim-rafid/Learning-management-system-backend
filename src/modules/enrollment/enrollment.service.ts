@@ -1,4 +1,4 @@
-import httpStatus from "http-status"
+import httpStatus from "http-status";
 import { AppError } from "../../utils/AppError";
 import { UserJwtPayload } from "../../types";
 import { prisma } from "../../helpers/prisma";
@@ -8,7 +8,10 @@ import config from "../../config";
 import Stripe from "stripe";
 import { Request, Response } from "express";
 import { Prisma } from "../../generated/prisma/client";
-import { IPaginationParameters, normalizePaginationQueryParams } from "../../helpers/normalizeQueryParams";
+import {
+  IPaginationParameters,
+  normalizePaginationQueryParams,
+} from "../../helpers/normalizeQueryParams";
 
 type EnrollResult =
   | { enrollment: any; payment?: null }
@@ -16,24 +19,30 @@ type EnrollResult =
 
 export const enrollStudent = async (
   courseId: string,
-  user: UserJwtPayload
+  user: UserJwtPayload,
 ): Promise<EnrollResult> => {
   const course = await prisma.course.findUnique({ where: { id: courseId } });
   if (!course) throw new AppError(httpStatus.NOT_FOUND, "Course not found");
-  if (course.deletedAt) throw new AppError(httpStatus.NOT_FOUND, "Course not available");
-  if (course.status !== "PUBLISHED") throw new AppError(httpStatus.FORBIDDEN, "Course not published");
+  if (course.deletedAt)
+    throw new AppError(httpStatus.NOT_FOUND, "Course not available");
 
   const currentUser = await prisma.user.findUniqueOrThrow({
     where: {
       email: user.email,
-      role: user.role
-    }
-  })
+      role: user.role,
+    },
+  });
 
-  if (course.instructorId === currentUser.id) throw new AppError(httpStatus.NOT_FOUND, "Cannot enroll in your own course");
+  if (course.instructorId === currentUser.id)
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      "Cannot enroll in your own course",
+    );
 
   const existing = await prisma.enrollment.findUnique({
-    where: { studentId_courseId: { studentId: currentUser.id, courseId } } as any,
+    where: {
+      studentId_courseId: { studentId: currentUser.id, courseId },
+    } as any,
   });
   if (existing) throw new AppError(httpStatus.NOT_FOUND, "Already enrolled");
 
@@ -54,7 +63,7 @@ export const enrollStudent = async (
       data: {
         studentId: currentUser.id,
         courseId,
-        status: "ACTIVE", 
+        status: "ACTIVE",
         progress: 0,
       },
     });
@@ -75,7 +84,7 @@ export const enrollStudent = async (
 
 export const enrollmentPayment = async (
   enrollmentId: string,
-  user: UserJwtPayload
+  user: UserJwtPayload,
 ) => {
   const enrollment = await prisma.enrollment.findUniqueOrThrow({
     where: {
@@ -83,7 +92,7 @@ export const enrollmentPayment = async (
       student: {
         email: user.email,
       },
-      status: EnrollmentStatus.DROPPED,
+      status: EnrollmentStatus.ACTIVE,
     },
     include: {
       course: true,
@@ -137,7 +146,7 @@ export const paymentVerification = async (req: Request, res: Response) => {
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
-      config.stripe.stripe_webhook_secret as string
+      config.stripe.stripe_webhook_secret as string,
     );
   } catch (err: any) {
     console.error("⚠️ Webhook signature verification failed:", err.message);
@@ -196,7 +205,7 @@ export const paymentVerification = async (req: Request, res: Response) => {
 export const getEnrollmentsByCourse = async (
   courseId: string,
   paginations: Partial<IPaginationParameters>,
-  filters: any
+  filters: any,
 ) => {
   const { take, skip, page, sortOrder, sortBy } =
     normalizePaginationQueryParams(paginations);
@@ -276,12 +285,14 @@ export const getEnrollmentsByCourse = async (
 // - if progress === 100 => mark enrollment COMPLETED and set completedAt
 export const markLessonCompleted = async (
   lessonId: string,
-  user: UserJwtPayload
+  user: UserJwtPayload,
 ) => {
   const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
   if (!lesson) throw new Error("Lesson not found");
 
-  const course = await prisma.course.findUnique({ where: { id: lesson.courseId } });
+  const course = await prisma.course.findUnique({
+    where: { id: lesson.courseId },
+  });
   if (!course) throw new Error("Course not found");
   if (course.deletedAt) throw new Error("Course not available");
   if (course.status !== "PUBLISHED") throw new Error("Course not published");
@@ -289,23 +300,28 @@ export const markLessonCompleted = async (
   const currentUser = await prisma.user.findUniqueOrThrow({
     where: {
       email: user.email,
-      role: user.role
-    }
-  })
+      role: user.role,
+    },
+  });
 
   const enrollment = await prisma.enrollment.findUnique({
-    where: { studentId_courseId: { studentId: currentUser.id, courseId: course.id } } as any,
+    where: {
+      studentId_courseId: { studentId: currentUser.id, courseId: course.id },
+    } as any,
     include: { payment: true },
   });
   if (!enrollment) throw new Error("Not enrolled");
   if (course.isPaid) {
     const payment = enrollment.payment;
-    if (!payment || payment.status !== "SUCCESS") throw new Error("Payment required to access content");
+    if (!payment || payment.status !== "SUCCESS")
+      throw new Error("Payment required to access content");
   }
 
   return await prisma.$transaction(async (tx) => {
     const existing = await tx.lessonCompletion.findUnique({
-      where: { lessonId_studentId: { lessonId, studentId: currentUser.id } } as any,
+      where: {
+        lessonId_studentId: { lessonId, studentId: currentUser.id },
+      } as any,
     });
     if (!existing) {
       await tx.lessonCompletion.create({
@@ -316,12 +332,15 @@ export const markLessonCompleted = async (
       });
     }
 
-    const totalLessons = await tx.lesson.count({ where: { courseId: course.id } });
+    const totalLessons = await tx.lesson.count({
+      where: { courseId: course.id },
+    });
     const completedLessons = await tx.lessonCompletion.count({
       where: { studentId: currentUser.id, lesson: { courseId: course.id } },
     });
 
-    const progress = totalLessons === 0 ? 0 : (completedLessons / totalLessons) * 100;
+    const progress =
+      totalLessons === 0 ? 0 : (completedLessons / totalLessons) * 100;
 
     const progressRounded = Math.min(100, Math.round(progress * 100) / 100);
 
@@ -336,17 +355,38 @@ export const markLessonCompleted = async (
       data: updateData,
     });
 
-    return { success: true, enrollment: updatedEnrollment, completedLessons, totalLessons };
+    return {
+      success: true,
+      enrollment: updatedEnrollment,
+      completedLessons,
+      totalLessons,
+    };
   });
 };
 
-export const getStudentCourses = async (studentId: string) => {
+export const getStudentCourses = async (user: UserJwtPayload) => {
+  const student = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user.email,
+      role: user.role,
+    },
+  });
+
   const items = await prisma.enrollment.findMany({
-    where: { studentId },
-    include: { course: { include: { instructor: { select: { id: true, name: true } } } }, payment: true },
+    where: { studentId: student.id },
+    include: {
+      course: { 
+        include: { 
+          instructor: { 
+            select: { id: true, name: true } 
+          },
+          lessons: true
+        } 
+      }
+    },
     orderBy: { enrolledAt: "desc" },
   });
-  return items
+  return items;
 };
 
 export const enrollmentServices = {
@@ -355,5 +395,5 @@ export const enrollmentServices = {
   paymentVerification,
   getEnrollmentsByCourse,
   markLessonCompleted,
-  getStudentCourses
-}
+  getStudentCourses,
+};

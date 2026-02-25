@@ -13,7 +13,7 @@ router.route("/").post(
     enrollmentControllers.enrollStudent,
 );
 
-router.route("/:bookingId").post(
+router.route("/:enrollmentId/payment").post(
     checkAuth(Role.STUDENT),
     enrollmentControllers.enrollmentPayment
 );

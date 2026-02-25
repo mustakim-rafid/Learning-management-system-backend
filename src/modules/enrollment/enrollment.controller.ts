@@ -63,15 +63,15 @@ const markLessonCompleted = catchAsync(async (req: Request & { user?: UserJwtPay
   });
 });
 
-const getStudentCourses = catchAsync(async (req: Request, res: Response) => {
-  const result = await enrollmentServices.getStudentCourses(req.body.studentId);
+const getStudentCourses = catchAsync(async (req: Request & { user?: UserJwtPayload }, res: Response) => {
+  const result = await enrollmentServices.getStudentCourses(req.user as UserJwtPayload);
     sendResponse(res, {
     statusCode: httpStatus.OK,
     message: "Student courses retrieved successfully",
     success: true,
     data: result
   });
-})
+});
 
 export const enrollmentControllers = {
   enrollStudent,

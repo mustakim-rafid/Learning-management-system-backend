@@ -32,4 +32,9 @@ router.route("/").get(
     userControllers.getAllUsers
 )
 
+router.route("/:id").patch(
+    checkAuth(Role.SUPER_ADMIN),
+    userControllers.softDelete
+)
+
 export const userRoutes = router

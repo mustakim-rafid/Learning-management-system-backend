@@ -146,10 +146,22 @@ const getAllUsers = async (
   };
 };
 
+const softDelete = async (userId: string) => {
+  const result = await prisma.user.update({
+    where: {
+      id: userId
+    },
+    data: {
+      isSuspended: true
+    }
+  })
+  return result
+}
 
 export const userServices = {
   createAdmin,
   createInstructor,
   createStudent,
-  getAllUsers
+  getAllUsers,
+  softDelete
 };

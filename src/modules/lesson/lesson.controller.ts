@@ -11,7 +11,7 @@ const createLesson = catchAsync(async (req: Request, res: Response) => {
     const uploadResponse = await fileUploader.uploadToCloudinary(req.file);
     req.body.contentUrl = uploadResponse?.secure_url;
   }
-  const result = await lessonServices.createLesson(req.body.courseId, req.body);
+  const result = await lessonServices.createLesson(req.body.courseId as string, req.body);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.CREATED,

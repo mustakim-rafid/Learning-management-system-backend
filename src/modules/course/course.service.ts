@@ -341,6 +341,41 @@ export const listLessonsByCourse = async (
   return lessons;
 };
 
+const getInstructorCourses = async (user: UserJwtPayload) => {
+  const instructor = await prisma.user.findUnique({
+    where: {
+      email: user.email,
+      role: Role.INSTRUCTOR,
+    },
+    select: { id: true },
+  });
+
+  if (!instructor) {
+    throw new AppError(httpStatus.NOT_FOUND, "Instructor not found");
+  }
+
+  const courses = await prisma.course.findMany({
+    where: {
+      instructorId: instructor.id,
+      deletedAt: null,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      _count: {
+        select: {
+          lessons: true,
+          enrollments: true,
+        },
+      },
+      lessons: true
+    },
+  });
+
+  return courses
+};
+
 export const courseServices = {
   createCourse,
   updateCourse,
@@ -348,5 +383,6 @@ export const courseServices = {
   publishCourse,
   getAllCourses,
   getCourseById,
-  listLessonsByCourse
+  listLessonsByCourse,
+  getInstructorCourses
 };

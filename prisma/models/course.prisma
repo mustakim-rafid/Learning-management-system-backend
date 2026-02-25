@@ -15,7 +15,7 @@ model Course {
     description  String?
     price        Int          @default(0)
     isPaid       Boolean      @default(false)
-    status       CourseStatus @default(DRAFT)
+    status       CourseStatus @default(PUBLISHED)
     thumbnailUrl String?
     instructorId String
     instructor   User         @relation("InstructorCourses", fields: [instructorId], references: [id])

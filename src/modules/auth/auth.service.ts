@@ -67,9 +67,11 @@ const getMe = async (token: string) => {
       email: decodedToken.email,
       isSuspended: false
     }
-  })
+  });
 
-  return user;
+  const { password, ...rest } = user
+
+  return rest;
 };
 
 const changePassword = async (

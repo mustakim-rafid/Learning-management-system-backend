@@ -82,6 +82,16 @@ const listLessonsByCourse = catchAsync(async (req: Request & { user?: UserJwtPay
   });
 });
 
+const getInstructorCourses = catchAsync(async (req: Request & { user?: UserJwtPayload }, res: Response) => {
+  const result = await courseServices.getInstructorCourses(req.user as UserJwtPayload);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Instructor courses retrieved successfully",
+    data: result,
+  });
+});
+
 export const courseControllers = {
   createCourse,
   updateCourse,
@@ -89,5 +99,6 @@ export const courseControllers = {
   publishCourse,
   getAllCourses,
   getCourseById,
-  listLessonsByCourse
+  listLessonsByCourse,
+  getInstructorCourses
 }
